@@ -10,8 +10,9 @@ def check(m):
     for i, _pos in enumerate(pos):
         x = _pos[0]
         y = _pos[1]
-        skew_t[x][y] = stat[m][i]
-        if skew_t[x][y] < skew_t[x - 1][y] or skew_t[x][y] < skew_t[x][y - 1]:
+        skew_bak = skew_t
+        skew_bak[x][y] = stat[m][i]
+        if skew_bak[x][y] < skew_bak[x - 1][y] or skew_bak[x][y] < skew_bak[x][y - 1]:
             return 0
     return 1
 
@@ -22,7 +23,7 @@ def DFS(num, m):
     if num == n - 2:
         slot = stat[m].index(0)
         stat[m][slot] = canperm[m][num]
-        count += check(m)
+        count[m] += check(m)
         stat[m][slot] = 0
         return
     else:
@@ -45,7 +46,7 @@ lam = [int(i) for i in input('lam=').strip().split()]
 mu = [int(i) for i in input('mu=').strip().split()]
 n = sum(lam) - sum(mu)
 t = []
-count = 0
+count = [0 for _ in range(n)]
 stat = [[0 for i in range(n)] for j in range(n)]
 canperm = [[i + 1 for i in range(n)] for j in range(n)]
 origin = (len(mu), mu[len(mu) - 1] + 1)
@@ -85,5 +86,5 @@ for i in t:
     i.join()
 
 t_1 = time.time()
-print(count)
+print(sum(count))
 print(t_1 - t_0)
