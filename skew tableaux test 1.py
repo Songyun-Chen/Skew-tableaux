@@ -1,41 +1,20 @@
 import threading
 import time
-def clean_t(l):
-    global skew_t
-    skew_t[l] = []
-    skew_t[l].append([0 for i in range(lam[0])])
-    for i in range(len(lam)):
-        if i >= len(mu):
-            skew_t[l].append([0 for i in range(lam[i])])
-        else:
-            skew_t[l].append([-1 for i in range(mu[i])] + [0 for i in range(mu[i], lam[i])])
-    return skew_t
 
-def origin_t(): #找skew ableaux的接點
-    global origin
-    origin = (len(mu), mu[len(mu) - 1] + 1)
-    return origin
+t_0 = time.time()
 
-def pos_t():
-    global  pos, origin
-    for i in range(len(skew_t)):
-        for j in range(len(skew_t[i])):
-            if skew_t[i][j] == 0:
-                pos.append((i + 1, j + 1))
-    return pos
 
-def check(l):
+def check(m):
     global pos, skew_t, stat
-    clean_t(l)
-    pos_t()
-    for i in range(len(pos)):
-        x = pos[i][0]
-        y = pos[i][1]
-        skew_t[l][x][y] = stat[l][i]
-        if skew_t[l][x][y] < skew_t[l][x-1][y] or skew_t[l][x][y] < skew_t[l][x][y-1]:
-            return 0
 
+    for i, _pos in enumerate(pos):
+        x = _pos[0]
+        y = _pos[1]
+        skew_t[m][x][y] = stat[m][i]
+        if skew_t[m][x][y] < skew_t[m][x - 1][y] or skew_t[m][x][y] < skew_t[m][x][y - 1]:
+            return 0
     return 1
+
 
 def DFS(num, m):
     global n, stat, count, canperm, total
@@ -43,15 +22,11 @@ def DFS(num, m):
     if num == n - 2:
         slot = stat[m].index(0)
         stat[m][slot] = canperm[m][num]
-        plus = check(m)
-        total += plus
-        for i in range(n):
-            print(skew_t[m][origin[0]][origin[1]])
-            count[skew_t[m][origin[0]][origin[1]]-1] += plus
+        count += check(m)
         stat[m][slot] = 0
         return
     else:
-        #print(num, m)
+        # print(num, m)
         for i in range(stat[m].index(0), n):
             if stat[m][i] == 0:
                 stat[m][i] = canperm[m][num]
@@ -60,44 +35,55 @@ def DFS(num, m):
 
 
 def job(k):
-    global count
+    global count, done_list
     DFS(0, k)
-    done_list[k-1] = True
+    done_list[k - 1] = True
     if all(done_list):
         t_1 = time.time()
         print(count)
-        print(total)
         print(t_1 - t_0)
+
 
 lam = [int(i) for i in input('lam=').strip().split()]
 mu = [int(i) for i in input('mu=').strip().split()]
-n = sum(lam)-sum(mu)
+n = sum(lam) - sum(mu)
 
-#n = int(input('n='))
-t_0 = time.time()
-t = []
-count = [0 for i in range(n)]
-total = 0
+count = 0
 stat = [[0 for i in range(n)] for j in range(n)]
 canperm = [[i + 1 for i in range(n)] for j in range(n)]
-origin = (0, 0)
-origin_t()
-skew_t = [[] for i in range(n)]
-for i in range(n):
-    clean_t(i)
-#print(skew_t[0])
+origin = (len(mu), mu[len(mu) - 1] + 1)
+
+width = max(lam)
+mu = mu + [0 for i in range(len(lam) - len(mu))]
+p_lam = [(lam[i], mu[i]) for i in range(len(lam))]
+
+skew_t = [[-1 for i in range(width + 2)]]
+for i in p_lam:
+    skew_t.append(
+        [-1] +
+        [-1 for _ in range(i[1])] + [0 for _ in range(i[0] - i[1])] + [-1 for _ in range(width - i[0])] +
+        [-1]
+    )
+skew_t.append([-1 for i in range(width + 2)])
+
+skew_t = [skew_t for _ in range(n)]
+
+
 pos = []
-pos_t()
+
+for i, line in enumerate(skew_t[0]):
+    for j, num in enumerate(line):
+        if num == 0:
+            pos.append((i, j))
+
 done_list = [False for i in range(n)]
 
 for i in range(n):
     stat[i][0] = i + 1
     canperm[i].remove(i + 1)
-    #print(stat[i])
-    #print(canperm[i])
+
+
 for i in range(n):
     t.append(threading.Thread(target=job, args=(i,)))
     t[i].start()
 
-for i in range(n):
-    t[i].join()
