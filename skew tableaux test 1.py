@@ -47,7 +47,7 @@ def job(k):
 lam = [int(i) for i in input('lam=').strip().split()]
 mu = [int(i) for i in input('mu=').strip().split()]
 n = sum(lam) - sum(mu)
-
+t = []
 count = 0
 stat = [[0 for i in range(n)] for j in range(n)]
 canperm = [[i + 1 for i in range(n)] for j in range(n)]
