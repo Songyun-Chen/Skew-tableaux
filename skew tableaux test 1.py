@@ -10,8 +10,8 @@ def check(m):
     for i, _pos in enumerate(pos):
         x = _pos[0]
         y = _pos[1]
-        skew_t[m][x][y] = stat[m][i]
-        if skew_t[m][x][y] < skew_t[m][x - 1][y] or skew_t[m][x][y] < skew_t[m][x][y - 1]:
+        skew_t[x][y] = stat[m][i]
+        if skew_t[x][y] < skew_t[x - 1][y] or skew_t[x][y] < skew_t[x][y - 1]:
             return 0
     return 1
 
@@ -36,12 +36,9 @@ def DFS(num, m):
 
 def job(k):
     global count, done_list
+    initial_time = time.time()
     DFS(0, k)
-    done_list[k - 1] = True
-    if all(done_list):
-        t_1 = time.time()
-        print(count)
-        print(t_1 - t_0)
+    print(k, time.time() - initial_time)
 
 
 lam = [int(i) for i in input('lam=').strip().split()]
@@ -66,17 +63,14 @@ for i in p_lam:
     )
 skew_t.append([-1 for i in range(width + 2)])
 
-skew_t = [skew_t for _ in range(n)]
-
 
 pos = []
 
-for i, line in enumerate(skew_t[0]):
+for i, line in enumerate(skew_t):
     for j, num in enumerate(line):
         if num == 0:
             pos.append((i, j))
 
-done_list = [False for i in range(n)]
 
 for i in range(n):
     stat[i][0] = i + 1
@@ -87,3 +81,9 @@ for i in range(n):
     t.append(threading.Thread(target=job, args=(i,)))
     t[i].start()
 
+for i in t:
+    i.join()
+
+t_1 = time.time()
+print(count)
+print(t_1 - t_0)
